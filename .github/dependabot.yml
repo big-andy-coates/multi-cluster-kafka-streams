@@ -1,0 +1,55 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+registries:
+  maven-central:
+    type: maven-repository
+    url: https://repo.maven.apache.org/maven2/
+  maven-snapshots:
+    type: maven-repository
+    url: https://s01.oss.sonatype.org/content/repositories/snapshots/
+  jit-pack:
+    type: maven-repository
+    url: https://jitpack.io
+  creek-github-packages:
+    type: maven-repository
+    url: https://maven.pkg.github.com/creek-service/*
+    username: "Creek-Bot-Token"
+    password: "\u0067hp_LtyvXrQZen3WlKenUhv21Mg6NG38jn0AO2YH"
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    open-pull-requests-limit: 50
+    schedule:
+      interval: monthly
+  - package-ecosystem: gradle
+    directory: /
+    registries:
+      - maven-central
+      - maven-snapshots
+      - jit-pack
+      - creek-github-packages
+    open-pull-requests-limit: 50
+    ignore:
+      - dependency-name: "org.apache.kafka:kafka-*"
+        # Stop dependabot wanting to update Kafka to Confluent's over version.
+        # Stick with Apache Kafka versioning by default:
+        update-types: [ "version-update:semver-major" ]
+    schedule:
+      interval: monthly
+  - package-ecosystem: gradle
+    directory: /docs-examples
+    open-pull-requests-limit: 50
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /test-service-native
+    schedule:
+      interval: monthly
+  - package-ecosystem: docker
+    directory: /test-service-json
+    schedule:
+      interval: monthly
