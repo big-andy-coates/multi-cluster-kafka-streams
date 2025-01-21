@@ -1,0 +1,159 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'checkstyle'
+    id 'com.diffplug.spotless' version "6.22.0"
+    id 'com.github.spotbugs' version "5.1.3"
+}
+
+group = 'com.github.big-andy-coates'
+
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+    withSourcesJar()
+}
+
+repositories {
+    mavenLocal()
+
+    maven {
+        url = uri("https://packages.confluent.io/maven/")
+        content {
+            includeGroup("io.confluent")
+            includeGroup("org.apache.kafka")
+        }
+    }
+
+    mavenCentral()
+}
+
+tasks.register("format") {
+    group = "mktx"
+    description = "Format the code"
+
+    dependsOn("spotlessCheck", "spotlessApply")
+}
+
+tasks.register("static") {
+    group = "mktx"
+    description = "Run static code analysis"
+
+    dependsOn("format", "checkstyleMain", "checkstyleTest", "spotbugsMain", "spotbugsTest")
+}
+
+tasks.register("allDeps", DependencyReportTask) {}
+
+dependencies {
+    spotbugsPlugins "com.h3xstream.findsecbugs:findsecbugs-plugin:1.12.0"
+    checkstyle "com.puppycrawl.tools:checkstyle:10.17.0"
+
+    implementation "org.apache.kafka:kafka-streams:$kafkaVersion"
+
+    testImplementation "org.hamcrest:hamcrest-core:$hamcrestVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:$junitVersion"
+    testImplementation "org.junit-pioneer:junit-pioneer:$junitPioneerVersion"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
+    testImplementation "com.google.guava:guava-testlib:$guavaVersion"
+    testImplementation "org.testcontainers:kafka:$testContainerVersion"
+    testImplementation "org.testcontainers:junit-jupiter:$testContainerVersion"
+
+    testRuntimeOnly "org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.add("-Xlint:all,-serial,-requires-automatic,-requires-transitive-automatic,-module")
+    options.compilerArgs.add("-Werror")
+}
+
+tasks.test {
+    useJUnitPlatform() {
+        if (project.hasProperty("excludeContainerised")) {
+            excludeTags("ContainerisedTest")
+        }
+    }
+
+    systemProperty("confluentVersion", confluentVersion)
+
+    shouldRunAfter(":static")
+
+    setForkEvery(5)
+    maxParallelForks = Runtime.getRuntime().availableProcessors()
+    testLogging {
+        showStandardStreams = true
+        exceptionFormat = TestExceptionFormat.FULL
+        showCauses = true
+        showExceptions = true
+        showStackTraces = true
+    }
+
+    // Add a test listener to list summary of failed tests at the end of the test run:
+    addTestListener(new TestListener() {
+
+        private final List<TestDescriptor> failures = new ArrayList<>()
+
+        @Override
+        void beforeSuite(final TestDescriptor desc) {}
+
+        @Override
+        void afterSuite(final TestDescriptor desc, final TestResult result) {
+            if (desc.getParent() != null || failures.isEmpty()) {
+                return
+            }
+
+            println("Summary of test failures:")
+            for (final def failure in failures) {
+                println(" - ${failure.getClassName()} > ${failure.getDisplayName()}")
+            }
+        }
+
+        @Override
+        void beforeTest(final TestDescriptor desc) {}
+
+        @Override
+        void afterTest(final TestDescriptor desc, final TestResult result) {
+            if (result.getFailedTestCount() > 0) {
+                failures.add(desc)
+            }
+        }
+    })
+}
+
+spotless {
+    java {
+        googleJavaFormat("1.15.0").aosp().reflowLongStrings()
+        indentWithSpaces()
+        importOrder()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+        toggleOffOn("formatting:off", "formatting:on")
+        targetExclude("**/build/generated/source*/**/*.*")
+    }
+}
+
+spotbugs {
+    excludeFilter.set(rootProject.file("config/spotbugs/suppressions.xml"))
+
+    tasks.spotbugsMain {
+        reports.create("html") {
+            required.set(true)
+            setStylesheet("fancy-hist.xsl")
+        }
+    }
+    tasks.spotbugsTest {
+        reports.create("html") {
+            required.set(true)
+            setStylesheet("fancy-hist.xsl")
+        }
+    }
+}
+
+defaultTasks("format", "static", "check")

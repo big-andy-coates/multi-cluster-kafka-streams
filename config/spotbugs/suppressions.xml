@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter
+xmlns="https://github.com/spotbugs/filter/3.0.0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/3.1.0/spotbugs/etc/findbugsfilter.xsd">
+
+    <!--
+        DO NOT ADD NEW SUPPRESSIONS IN HERE!!!
+
+        If an issue is a false-positive, use an annotation disable the exact error and adding a justification, e.g.
+
+        @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP",
+            justification = "The returned type is immutable")
+       -->
+    <Match>
+        <!-- Exclude generated sources   -->
+        <Source name="~.*[\\/]build[\\/]generated[\\/]source.*" />
+    </Match>
+    <Match>
+        <!-- Exclude generated sources   -->
+        <Source name="~.*[\\/]build[\\/]generated-main-avro-java.*" />
+    </Match>
+    <Match>
+        <!-- Exclude generated sources   -->
+        <Source name="~.*[\\/]jmh_generated[\\/].*" />
+    </Match>
+</FindBugsFilter>
