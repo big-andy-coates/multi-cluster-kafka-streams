@@ -26,13 +26,7 @@ public final class App implements AutoCloseable {
 
         this.streams =
                 new KafkaStreams(
-                        topology,
-                        properties(
-                                applicationId,
-                                sourceClusterBootstrap,
-                                destinationClusterBootstrap,
-                                configOverrides),
-                        clientSupplier);
+                        topology, properties(applicationId, configOverrides), clientSupplier);
     }
 
     public void start() {
@@ -52,10 +46,7 @@ public final class App implements AutoCloseable {
     }
 
     private static Properties properties(
-            final String applicationId,
-            final String sourceClusterBootstrap,
-            final String destinationClusterBootstrap,
-            final Map<String, ?> configOverrides) {
+            final String applicationId, final Map<String, ?> configOverrides) {
         final Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, applicationId);
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "not-used");
