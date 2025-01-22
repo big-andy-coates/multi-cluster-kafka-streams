@@ -1,6 +1,6 @@
 # A Workflow for auto-approving and auto-merging dependency update PRs raised by Dependabot
 
-name: Dependabot
+name: Dependabot auto-merge
 on:
   pull_request:
     branches: [ main ]
