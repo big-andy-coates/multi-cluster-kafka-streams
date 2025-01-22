@@ -1,6 +1,6 @@
 # A Workflow for auto-approving and auto-merging dependency update PRs raised by Dependabot
 
-name: Dependabot
+name: Dependabot auto-merge
 on:
   pull_request:
     branches: [ main ]
@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Dependabot metadata
         id: metadata
-        uses: dependabot/fetch-metadata@0fb21704c18a42ce5aa8d720ea4b912f5e6babef # v2.0.0
+        uses: dependabot/fetch-metadata@dbb049abf0d677abbd7f7eee0375145b417fdd34 # v2.2.0
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
       - name: Approve PR
