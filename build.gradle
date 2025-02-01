@@ -5,7 +5,7 @@ plugins {
     id 'maven-publish'
     id 'checkstyle'
     id 'com.diffplug.spotless' version "7.0.2"
-    id 'com.github.spotbugs' version "6.1.2"
+    id 'com.github.spotbugs' version "6.1.3"
 }
 
 group = 'com.github.big-andy-coates'
