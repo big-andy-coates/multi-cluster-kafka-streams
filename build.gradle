@@ -49,7 +49,7 @@ tasks.register("static") {
 tasks.register("allDeps", DependencyReportTask) {}
 
 dependencies {
-    spotbugsPlugins "com.h3xstream.findsecbugs:findsecbugs-plugin:1.13.0"
+    spotbugsPlugins "com.h3xstream.findsecbugs:findsecbugs-plugin:1.14.0"
     checkstyle "com.puppycrawl.tools:checkstyle:10.23.1"
 
     implementation "org.apache.kafka:kafka-streams:$kafkaVersion"
