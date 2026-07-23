@@ -44,6 +44,8 @@ public class MultiClusterKafkaFunctionalTest {
 
     private static final Map<String, String> KAFKA_CLUSTER_ENV =
             Map.of(
+                    // `group.initial.rebalance.delay.ms` reduced to speed up test.
+                    // Commenting this out does _not_ allow the consumer to rejoin quickly
                     "KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0",
                     "KAFKA_GROUP_MIN_SESSION_TIMEOUT_MS", "1000",
                     "KAFKA_DEFAULT_REPLICATION_FACTOR", "1",
@@ -68,8 +70,12 @@ public class MultiClusterKafkaFunctionalTest {
                     // Configure things to process & rebalance more quickly in tests:
                     StreamsConfig.NUM_STREAM_THREADS_CONFIG, 1,
                     StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 100,
-                    ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, 250,
-                    ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 1_000);
+                    ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, 250
+                    // Uncommenting this will make
+                    // shouldRestoreStateStoreFromChangeLogInDestinationCluster() run in seconds,
+                    // not 45+ seconds:
+                    // , ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 1_000
+                    );
 
     private String applicationId;
     private String sourceTopic;
@@ -155,7 +161,7 @@ public class MultiClusterKafkaFunctionalTest {
         produceTo(sourceTopic, 5L, 3);
 
         // When:
-        createApp();
+        createApp(); // <-- Test pauses here for ~45 seconds
 
         // Then:
         final KeyValue<Long, Integer> record = consumeFrom(sinkTopic);
