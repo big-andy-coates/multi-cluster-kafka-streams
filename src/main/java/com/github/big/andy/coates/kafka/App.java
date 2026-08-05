@@ -42,7 +42,10 @@ public final class App implements AutoCloseable {
     }
 
     public void close() {
-        streams.close();
+        final KafkaStreams.CloseOptions closeOptions = new KafkaStreams.CloseOptions();
+        // Uncommenting this has no affect:
+        // closeOptions.leaveGroup(true);
+        streams.close(closeOptions);
     }
 
     private static Properties properties(
